@@ -3,20 +3,22 @@
  */
 
 // Include DBHelper functions for fetching restaurants and putting in indexedDB
-self.importScripts('js/dbhelper.js', 'js/idb.js');
+// self.importScripts('js/dbhelper.js', 'js/idb.js');
+ self.importScripts('js/idb.js');
+// import idb from "idb";
 
 // Cache Information
-var myCache     = 'restaurantReview_301';
+var myCache     = 'restaurantReview_302';
 var cacheFiles  = [
-  '/index.html',
-  '/restaurant.html',
-  '/css/styles.css',
-  '/img/',
-  '/js/dbhelper.js',
-  '/js/main.js',
-  '/js/restaurant_info.js',
-  '/js/swregister.js' ,
-  '/js/idb.js'
+  'index.html',
+  'restaurant.html',
+  'css/styles.css',
+  'img/',
+  'js/dbhelper.js',
+  'js/main.js',
+  'js/restaurant_info.js',
+  'js/swregister.js' ,
+  'js/idb.js'
 ];
 
 // IDB Information
@@ -78,11 +80,49 @@ function apiFetch(event, id) {
 
   // Restaurant Request 
   if(event.request.url.indexOf('restaurants') > -1) {
-    event.respondWith(DBHelper.idbRestaurantRequest());
+    event.respondWith(dbPromise.then(function(db) {
+      return db.transaction('restaurantData').objectStore('restaurantData').get(id);
+    })
+    .then(function(data) {
+      return (data && data.data) || fetch(event.request)
+        .then(function(response) {
+          return dbPromise
+            .then(function(db) {
+              db.transaction('restaurantData', 'readwrite').objectStore('restaurantData').put({ id: id, data: response.json() });
+              return response.json();
+            });
+        });
+    })
+    .then(function(endResponse) { return new Response(JSON.stringify(endResponse)); })
+    .catch(function(error)      { console.log(`In DBHelper.idbRestaurantRequest, error: ${error.message}`); }));
   }
 
   // Review Request 
-  event.respondWith(DBHelper.idbReviewRequest());
+  event.respondWith(dbPromise.then(function(db) {
+    return db.transaction('reviewData').objectStore('reviewData').index('restaurant_id').getAll(id);
+  })
+  .then(function(data) {
+    return (data && data.data) || fetch(event.request)
+      .then(function(response) {
+        return dbPromise
+          .then(function(db) {
+            let store = db.transaction('reviewData', 'readwrite').objectStore('reviewData');
+            let r = response.json();
+            r.forEach(function(review) {
+              store.put({id: review.id, 'restaurant_id': review.restaurant_id, data: review});
+            })
+            return r;
+          });
+      });
+  })
+  .then(function(endResponse) {
+    if(endResponse[0].data) {
+      let formatted = endResponse.map(review => review.data);
+      return new Response(JSON.stringify(formatted));
+    }
+    return new Response(JSON.stringify(endResponse));
+  })
+  .catch(function(error) {  console.log(`In apiFetch catch-reviewData, error: ${error.message}`);  }));
 }
 
 function cacheFetch(event, request) {

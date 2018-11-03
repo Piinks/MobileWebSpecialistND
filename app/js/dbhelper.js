@@ -27,7 +27,7 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    console.log(`In fetchRestaurants - callback: ${callback}`);
+    //console.log(`In fetchRestaurants - callback: ${callback}`);
     let requestURL = DBHelper.DATABASE_URL;
     // console.log(`Request URL: ${requestURL}`);
     // Fetch restaurant data from server
@@ -304,7 +304,7 @@ class DBHelper {
         console.log("In addToUpdateQueue catch, error: ", error.message);
       })
       // TODO : attempt push of updates
-      .then(DBHelper.pushUpdates());
+      //.then(DBHelper.pushUpdates());
   }
 
   /*
@@ -337,7 +337,7 @@ class DBHelper {
                     // Recursive call to push next update record. Will retrun in next call if empty.
                     .then(function() {
                       console.log("Record deleted, calling next...");
-                      DBHelper.pushUpdates();
+                      //DBHelper.pushUpdates();
                     })
                 })
             })
@@ -372,7 +372,7 @@ class DBHelper {
 
   /*
    * Function to check idb for restaurant information 
-   */
+   *
   static idbRestaurantRequest() {
     return dbPromise.then(function(db) {
       return db.transaction('restaurantData').objectStore('restaurantData').get(id);
@@ -393,7 +393,7 @@ class DBHelper {
 
   /*
    * Function to check idb for review information
-   */
+   *
   static idbReviewRequest() {
     return dbPromise.then(function(db) {
       return db.transaction('reviewData').objectStore('reviewData').index('restaurant_id').getAll(id);
@@ -420,6 +420,6 @@ class DBHelper {
       return new Response(JSON.stringify(endResponse));
     })
     .catch(function(error) {  console.log(`In apiFetch catch-reviewData, error: ${error.message}`);  })
-  }
+  }*/
 
 }

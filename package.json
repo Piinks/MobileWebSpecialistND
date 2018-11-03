@@ -43,5 +43,8 @@
     "gulp-util": "^3.0.8",
     "gulp-webp": "^3.0.0",
     "uglify-es": "^3.3.9"
+  },
+  "dependencies": {
+    "idb": "^2.1.3"
   }
 }

@@ -18,7 +18,7 @@ window.initMap = () => {
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
     }
   });
-  DBHelper.pushUpdates();
+  //DBHelper.pushUpdates();
 }
 
 /*

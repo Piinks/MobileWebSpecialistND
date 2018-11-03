@@ -79,7 +79,7 @@ window.initMap = () => {
     scrollwheel: false
   });
   updateRestaurants();
-  DBHelper.pushUpdates();
+  //DBHelper.pushUpdates();
 }
 
 /*
