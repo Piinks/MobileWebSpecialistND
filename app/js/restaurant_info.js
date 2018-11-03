@@ -35,6 +35,7 @@ fetchRestaurantFromURL = (callback) => {
     callback(error, null);
   } else {
     DBHelper.fetchRestaurantById(id, (error, restaurant) => {
+      //console.log(restaurant);
       self.restaurant = restaurant;
       if (!restaurant) {
         console.error(error);
@@ -74,7 +75,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   image.srcset = `/img/${restaurant.id}@1x.webp 300w,
                   /img/${restaurant.id}@2x.webp 600w,
                   /img/${restaurant.id}@3x.webp 900w`;
-  image.alt = restaurant.alt_text;
+  image.alt = `Image of ${restaurant.name} restaurant`;
 
   const cuisine = document.getElementById('restaurant-cuisine');
   cuisine.innerHTML = restaurant.cuisine_type;
@@ -86,7 +87,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   // fill reviews
   //fillReviewsHTML();
   console.log(`In fillRestaurantHTML, about to call fetch then fill with id: ${restaurant.id}`);
-  DBHelper.fetchReviewsById(restaurant.id).then(fillReviewsHTML(reviews));
+  DBHelper.fetchReviewsById(restaurant.id).then(fillReviewsHTML);
 }
 
  /*
@@ -141,7 +142,7 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
 /*
  * Create all reviews HTML and add them to the webpage.
  */
-fillReviewsHTML = (reviews) => {
+fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   console.log("In fillReviewsHTML ", reviews);
   const container = document.getElementById('reviews-container');
   const title = document.createElement('h3');
@@ -156,7 +157,7 @@ fillReviewsHTML = (reviews) => {
 
   if (!reviews) {
     const noReviews = document.createElement('h3');
-    noReviews.innerHTML = 'No reviews yet!';
+    noReviews.innerHTML = '<br>No reviews yet!<br>';
     container.appendChild(noReviews);
     return;
   }
@@ -178,7 +179,7 @@ createReviewHTML = (review) => {
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  date.innerHTML = new Date(review.createdAt).toLocaleDateString();
   li.appendChild(date);
 
   const rating = document.createElement('p');
@@ -323,8 +324,46 @@ handleSubmit = (e) => {
   //console.log("in handleSubmit");
   let id        = self.restaurant.id;
   let name      = document.getElementById("name").value;
-  let rating    = document.getElementById("rating").value + 0;
+  let rating    = document.getElementById("rating").value - 0;
   let comments  = document.getElementById("comments").value;
+  // Add the new review to the reviews list
+  const ul = document.getElementById('reviews-list');
+  
+  // Put new review in reviews list on site ---
+  const li = document.createElement('li');
+  const newName = document.createElement('p');
+  newName.id = "reviewer-name";
+  newName.innerHTML = name;
+  li.appendChild(newName);
+
+  const date = document.createElement('p');
+  //let now = Date.now();
+  date.innerHTML = "Date";// TODO, sort this mess out : now.toLocaleDateString();
+  li.appendChild(date);
+
+  const newRating = document.createElement('p');
+  newRating.innerHTML = `Rating: ${rating}`;
+  li.appendChild(newRating);
+
+  const stars = document.createElement('p');
+  var starString = "";
+  for (i = 0; i < rating; i++){
+    starString += "&#9733 ";
+  }
+  //console.log("starString ", starString);
+  stars.innerHTML = starString;
+  li.appendChild(stars);
+
+  const line = document.createElement('hr');
+  li.appendChild(line);
+
+  const newComments = document.createElement('p');
+  newComments.id = "reviewer-comments";
+  newComments.innerHTML = comments;
+  li.appendChild(newComments);
+  //---
+
+  ul.appendChild(li);
 
   DBHelper.saveReview(id, name, rating, comments, Date.now());
     // Get rid of the form

@@ -3,7 +3,7 @@
  */
 // Change this to your server port
 const port = 1337;
-const dbPromise = idb.open('restaurantReviews', 3, upgradeDb => {
+const dbPromise = idb.open("restaurantReviews", 3, upgradeDb => {
   switch(upgradeDb.oldVersion) {
     case 0: upgradeDb.createObjectStore("restaurantData", {keyPath: "id"});
     case 1: upgradeDb.createObjectStore("reviewData",     {keypath: "id"}).createIndex("restaurant_id", "restaurant_id");
@@ -61,7 +61,7 @@ class DBHelper {
    * Fetch a restaurant by its ID.
    */
   static fetchRestaurantById(id, callback) {
-    console.log(`In fetchRestaurantsById - id: ${id}, callback: ${callback}`);
+    console.log(`In fetchRestaurantsById - id: ${id}`);
     // fetch all restaurants with proper error handling.
     DBHelper.fetchRestaurants((error, restaurants) => {
       if (error) {
@@ -201,15 +201,16 @@ class DBHelper {
   static fetchReviewsById(id) {
     let requestURL = DBHelper.DATABASE_URL_REVIEWS + "/?restaurant_id=" + id;
     console.log(`In DBHelper.fetchReviewsById - request: ${requestURL}, id: ${id}`);
-    fetch(requestURL, {method: "GET"})
+    return fetch(requestURL, {method: "GET"})
       .then(function(response) {
+        console.log("response: ", response);
         if (response.ok) return response.json();
 
         //throw new Error("Fetch response Error in fetchReviewsBy...ID")
       })
       .then(function(reviewData) {
         // If fetch successful
-        console.log(reviewData);
+        console.log("reviewData: ", reviewData);
         //dbPromise.putReviews(reviewData);
         return reviewData;
       })
@@ -242,7 +243,8 @@ class DBHelper {
           let updaterestaurant = restaurants[0];
           if (!updaterestaurant) return;
           // Update restaurant with new data
-          Object.keys(update).forEach(key => {  updaterestaurant[key] = update[key];  });
+          let keys = Object.keys(update)
+          keys.forEach(key => {  updaterestaurant[key] = update[key];  });
 
           // Store updated information back in idb
           dbPromise.then(function(db) {
@@ -263,7 +265,8 @@ class DBHelper {
           let updaterestaurant = value.data;
           if (!updaterestaurant) return;
           // Update restaurant wiht new data
-          Object.keys(update).forEach(key => {  updaterestaurant[key] = update[key] });
+          let keys = Object.keys(update)
+          keys.forEach(key => {  updaterestaurant[key] = update[key] });
 
           // Store updated information back in idb
           dbPromise.then(function(db) {
@@ -363,6 +366,60 @@ class DBHelper {
     DBHelper.updateReviewCache(id, body);
     DBHelper.addToUpdateQueue(url, method, body);
     //callback(null, null);
+  }
+
+  // IDB Functionality ------
+
+  /*
+   * Function to check idb for restaurant information 
+   */
+  static idbRestaurantRequest() {
+    return dbPromise.then(function(db) {
+      return db.transaction('restaurantData').objectStore('restaurantData').get(id);
+    })
+    .then(function(data) {
+      return (data && data.data) || fetch(event.request)
+        .then(function(response) {
+          return dbPromise
+            .then(function(db) {
+              db.transaction('restaurantData', 'readwrite').objectStore('restaurantData').put({ id: id, data: response.json() });
+              return response.json();
+            });
+        });
+    })
+    .then(function(endResponse) { return new Response(JSON.stringify(endResponse)); })
+    .catch(function(error)      { console.log(`In DBHelper.idbRestaurantRequest, error: ${error.message}`); })
+  }
+
+  /*
+   * Function to check idb for review information
+   */
+  static idbReviewRequest() {
+    return dbPromise.then(function(db) {
+      return db.transaction('reviewData').objectStore('reviewData').index('restaurant_id').getAll(id);
+    })
+    .then(function(data) {
+      return (data && data.data) || fetch(event.request)
+        .then(function(response) {
+          return dbPromise
+            .then(function(db) {
+              let store = db.transaction('reviewData', 'readwrite').objectStore('reviewData');
+              let r = response.json();
+              r.forEach(function(review) {
+                store.put({id: review.id, 'restaurant_id': review.restaurant_id, data: review});
+              })
+              return r;
+            });
+        });
+    })
+    .then(function(endResponse) {
+      if(endResponse[0].data) {
+        let formatted = endResponse.map(review => review.data);
+        return new Response(JSON.stringify(formatted));
+      }
+      return new Response(JSON.stringify(endResponse));
+    })
+    .catch(function(error) {  console.log(`In apiFetch catch-reviewData, error: ${error.message}`);  })
   }
 
 }
