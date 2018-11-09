@@ -192,19 +192,9 @@ favoriteClicked = (restaurant, button) => {
   let requestMethod = "PUT";
   DBHelper.updateRestaurantCache(restaurant.id, {"is_favorite": !fav});
   DBHelper.addToUpdateQueue(requestURL, requestMethod);
-  //return fetch(`${DBHelper.DATABASE_URL}/restaurants/${restaurant.id}/?is_favorite=${!fav}`, {method: 'PUT'})
-    //.then(response => {
-    //  if(!response.ok) return Promise.reject("Favorite could not be updated.");
-    //  return response.json();
-    //}).then(updatedRestaurant => {
-      // Update restaurant on idb
-      // dbPromise.putRestaurants(updatedRestaurant, true);
-      // Change state of toggle button
-      //console.log(`Exiting state: ${!fav}`);
-      button.setAttribute('aria-pressed', !fav);
-      button.innerHTML = !fav ? '&#9829;' : '&#9825;'; 
-      button.onclick = event => favoriteClicked(restaurant, button);
-    //});
+  button.setAttribute('aria-pressed', !fav);
+  button.innerHTML = !fav ? '&#9829;' : '&#9825;'; 
+  button.onclick = event => favoriteClicked(restaurant, button);
 }
 
 /*

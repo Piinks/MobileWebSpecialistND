@@ -18,7 +18,7 @@ window.initMap = () => {
       DBHelper.mapMarkerForRestaurant(self.restaurant, self.map);
     }
   });
-  //DBHelper.pushUpdates();
+  DBHelper.pushUpdates();
 }
 
 /*
@@ -84,8 +84,6 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
-  // fill reviews
-  //fillReviewsHTML();
   console.log(`In fillRestaurantHTML, about to call fetch then fill with id: ${restaurant.id}`);
   DBHelper.fetchReviewsById(restaurant.id).then(fillReviewsHTML);
 }
@@ -94,8 +92,6 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   * Handling favorite button clicked.
   */
 favoriteClicked = (restaurant, button) => {
-  //console.log(`Data: ${restaurant.name}, ${restaurant.is_favorite}, ${button}`);
-  //console.log(`favClicked. Entering state: ${button.getAttribute("aria-pressed")}`);
 
   // Get current fav state
   let fav = (button.getAttribute("aria-pressed") && button.getAttribute("aria-pressed") === "true") ? true : false;
@@ -104,19 +100,9 @@ favoriteClicked = (restaurant, button) => {
   let requestMethod = "PUT";
   DBHelper.updateRestaurantCache(restaurant.id, {"is_favorite": !fav});
   DBHelper.addToUpdateQueue(requestURL, requestMethod);
-  //return fetch(`${DBHelper.DATABASE_URL}/${restaurant.id}/?is_favorite=${!fav}`, {method: 'PUT'})
-    //.then(response => {
-    //  if(!response.ok) return Promise.reject("Favorite could not be updated.");
-    //  return response.json();
-    //}).then(updatedRestaurant => {
-      // Update restaurant on idb
-      // dbPromise.putRestaurants(updatedRestaurant, true);
-      // Change state of toggle button
-      //console.log(`Exiting state: ${!fav}`);
-      button.setAttribute('aria-pressed', !fav);
-      button.innerHTML = !fav ? '&#9829;' : '&#9825;'; 
-      button.onclick = event => favoriteClicked(restaurant, button);
-    //});
+  button.setAttribute('aria-pressed', !fav);
+  button.innerHTML = !fav ? '&#9829;' : '&#9825;'; 
+  button.onclick = event => favoriteClicked(restaurant, button);
 }
 
 /*
@@ -191,7 +177,6 @@ createReviewHTML = (review) => {
   for (i = 0; i < review.rating; i++){
     starString += "&#9733 ";
   }
-  //console.log("starString ", starString);
   stars.innerHTML = starString;
   li.appendChild(stars);
 
@@ -212,10 +197,8 @@ createReviewHTML = (review) => {
 fillBreadcrumb = (restaurant=self.restaurant) => {
   const breadcrumb = document.getElementById('breadcrumb');
   const li = document.createElement('li');
-  //const h2 = document.createElement('h2');
   li.setAttribute('aria-current', 'page');
   li.innerHTML = restaurant.name;
-  //li.appendChild(h2);
   breadcrumb.appendChild(li);
 }
 
@@ -321,7 +304,6 @@ reviewForm = () => {
 handleSubmit = (e) => {
   // Takes care of submission cancelation
   e.preventDefault();
-  //console.log("in handleSubmit");
   let id        = self.restaurant.id;
   let name      = document.getElementById("name").value;
   let rating    = document.getElementById("rating").value - 0;
@@ -337,8 +319,8 @@ handleSubmit = (e) => {
   li.appendChild(newName);
 
   const date = document.createElement('p');
-  //let now = Date.now();
-  date.innerHTML = "Date";// TODO, sort this mess out : now.toLocaleDateString();
+  let now = Date.now();
+  date.innerHTML = now.toLocaleDateString();
   li.appendChild(date);
 
   const newRating = document.createElement('p');
@@ -350,7 +332,6 @@ handleSubmit = (e) => {
   for (i = 0; i < rating; i++){
     starString += "&#9733 ";
   }
-  //console.log("starString ", starString);
   stars.innerHTML = starString;
   li.appendChild(stars);
 

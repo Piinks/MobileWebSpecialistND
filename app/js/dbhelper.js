@@ -27,33 +27,18 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    //console.log(`In fetchRestaurants - callback: ${callback}`);
     let requestURL = DBHelper.DATABASE_URL;
-    // console.log(`Request URL: ${requestURL}`);
     // Fetch restaurant data from server
     fetch(requestURL, {method: "GET"})
       .then(function(response) {
         // If response returns ok, return json of restaurant data
         if (response.ok) return response.json();
-        
-        // If not returned, there is an error - or offline mode
-        // throw new Error("Fetch response Error in fetchRestaurants");
       })
       .then(function(restaurantData) {
         callback(null, restaurantData);
       })
       .catch(function(error) {
         console.log("In fetchRestaurants catch, error: ", error.message);
-        // // Retrieve data from IndexedDB
-        // idb.open('restaurantReviews', 1)
-        //   .then(db => {
-        //     return db.transaction("restaurantData")
-        //     .objectStore("restaurantData")
-        //     .getAll();
-        // })
-        // .then(restaurantData => {
-        //   callback(null,restaurantData);
-        // });
       });
     }
 
@@ -205,21 +190,14 @@ class DBHelper {
       .then(function(response) {
         console.log("response: ", response);
         if (response.ok) return response.json();
-
-        //throw new Error("Fetch response Error in fetchReviewsBy...ID")
       })
       .then(function(reviewData) {
         // If fetch successful
         console.log("reviewData: ", reviewData);
-        //dbPromise.putReviews(reviewData);
         return reviewData;
       })
       .catch(function(error) {
         console.log("In fetchReviewsBy...ID catch, error:", error.message);
-        // // Error handling
-        // console.log(`Error in fetch reviews by ID: ${error}, checking idb...`);
-        // if (idbReviews.length < 1) return null;
-        // return idbReviews;
       });
   }
 
@@ -232,7 +210,6 @@ class DBHelper {
 
     // Update all restaurant data
     dbPromise.then(function(db) {
-      //let restaurantStore = 
       db.transaction("restaurantData", "readwrite").objectStore("restaurantData").get("-1")
         .then(function(value) {
           if(!value) {
@@ -303,8 +280,7 @@ class DBHelper {
       .catch(function(error) {
         console.log("In addToUpdateQueue catch, error: ", error.message);
       })
-      // TODO : attempt push of updates
-      //.then(DBHelper.pushUpdates());
+      .then(DBHelper.pushUpdates());
   }
 
   /*
@@ -319,8 +295,6 @@ class DBHelper {
           // No updates, so get outta here!
           if(!cursor) return;
           let update    = cursor.value.data;
-          
-          // check for bad records? See in testing
 
           let params  = { body: JSON.stringify(update.body), method: update.method }; 
 
@@ -337,7 +311,7 @@ class DBHelper {
                     // Recursive call to push next update record. Will retrun in next call if empty.
                     .then(function() {
                       console.log("Record deleted, calling next...");
-                      //DBHelper.pushUpdates();
+                      DBHelper.pushUpdates();
                     })
                 })
             })
@@ -365,61 +339,6 @@ class DBHelper {
     console.log(`In saveReview - url: ${url}, method: ${method}, body: ${body}`);
     DBHelper.updateReviewCache(id, body);
     DBHelper.addToUpdateQueue(url, method, body);
-    //callback(null, null);
   }
-
-  // IDB Functionality ------
-
-  /*
-   * Function to check idb for restaurant information 
-   *
-  static idbRestaurantRequest() {
-    return dbPromise.then(function(db) {
-      return db.transaction('restaurantData').objectStore('restaurantData').get(id);
-    })
-    .then(function(data) {
-      return (data && data.data) || fetch(event.request)
-        .then(function(response) {
-          return dbPromise
-            .then(function(db) {
-              db.transaction('restaurantData', 'readwrite').objectStore('restaurantData').put({ id: id, data: response.json() });
-              return response.json();
-            });
-        });
-    })
-    .then(function(endResponse) { return new Response(JSON.stringify(endResponse)); })
-    .catch(function(error)      { console.log(`In DBHelper.idbRestaurantRequest, error: ${error.message}`); })
-  }
-
-  /*
-   * Function to check idb for review information
-   *
-  static idbReviewRequest() {
-    return dbPromise.then(function(db) {
-      return db.transaction('reviewData').objectStore('reviewData').index('restaurant_id').getAll(id);
-    })
-    .then(function(data) {
-      return (data && data.data) || fetch(event.request)
-        .then(function(response) {
-          return dbPromise
-            .then(function(db) {
-              let store = db.transaction('reviewData', 'readwrite').objectStore('reviewData');
-              let r = response.json();
-              r.forEach(function(review) {
-                store.put({id: review.id, 'restaurant_id': review.restaurant_id, data: review});
-              })
-              return r;
-            });
-        });
-    })
-    .then(function(endResponse) {
-      if(endResponse[0].data) {
-        let formatted = endResponse.map(review => review.data);
-        return new Response(JSON.stringify(formatted));
-      }
-      return new Response(JSON.stringify(endResponse));
-    })
-    .catch(function(error) {  console.log(`In apiFetch catch-reviewData, error: ${error.message}`);  })
-  }*/
 
 }

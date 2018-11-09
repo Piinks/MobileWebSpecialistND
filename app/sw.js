@@ -3,9 +3,7 @@
  */
 
 // Include DBHelper functions for fetching restaurants and putting in indexedDB
-// self.importScripts('js/dbhelper.js', 'js/idb.js');
- self.importScripts('js/idb.js');
-// import idb from "idb";
+self.importScripts('js/idb.js');
 
 // Cache Information
 var myCache     = 'restaurantReview_302';
@@ -20,15 +18,6 @@ var cacheFiles  = [
   'js/swregister.js' ,
   'js/idb.js'
 ];
-
-// IDB Information
-//const dbPromise = idb.open('restaurantReviews', 3, upgradeDb => {
-//  switch(upgradeDb.oldVersion) {
-//    case 0: upgradeDb.createObjectStore('restaurantData', {keyPath: 'id'});
-//    case 1: upgradeDb.createObjectStore('reviewData',     {keypath: 'id'}).createIndex('restaurant_id', 'restaurant_id');
-//    case 2: upgradeDb.createObjectStore('updateData',     {keyPath: 'id', autoIncrement: true});
-//  }
-//});
 
 /* 
  * Event Listener for install - caching the files
@@ -144,23 +133,3 @@ function cacheFetch(event, request) {
         .catch(function(error) {  console.log(`In cacheFetch catch, error: ${error.message}`);  });
     })
 }
-
-// /* 
-//  * Event Listener for activate 
-//  */
-// self.addEventListener('activate', event => {
-//   console.log('Event trigger - activate');
-//   DBHelper.fetchRestaurants((error, restaurants) => {
-//     if (error) {
-//       callback(error, null);
-//     } else {
-//       const dbPromise = idb.open('restaurantReviews', 3, upgradeDb => {
-//         switch(upgradeDb.oldVersion) {
-//           case 0: upgradeDb.createObjectStore('restaurantData', {keyPath: 'id'});
-//           case 1: upgradeDb.createObjectStore('reviewData',     {keypath: 'id'}).createIndex('restaurant_id', 'restaurant_id');
-//           case 2: upgradeDb.createObjectStore('updateData',     {keyPath: 'id', autoIncrement: true});
-//         }
-//       });
-//     }
-//   });
-// });
